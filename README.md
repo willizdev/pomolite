@@ -1,8 +1,7 @@
 # Pomolite
 
-Pomolite is a fast, simple, and distraction-free pomodoro timer.
-The app was created in order to boost your productivity,
-inspired by the [Pomodoro Technique](https://en.wikipedia.org/wiki/Pomodoro_Technique),
+Pomolite is a fast, simple, and distraction-free pomodoro timer
+to boost your focus and productivity, inspired by the Pomodoro Technique,
 a time management method that helps you focus on tasks by breaking work into intervals.
 
 <img src="assets/pomolite_banner.png" alt="pomolite">
@@ -15,7 +14,7 @@ a time management method that helps you focus on tasks by breaking work into int
 git clone https://github.com/willizdev/pomolite.git
 ```
 
-2. Install required packages
+2. Install packages
 
 ```
 pnpm install
