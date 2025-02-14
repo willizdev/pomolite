@@ -7,12 +7,13 @@
     import type { Config, Session } from "$lib/types";
     import { ConfigDefault, SessionDefault } from "$lib/types";
     import { Format } from "$lib/utils/format";
+    import { PlayClick, PlayAlarm } from "$lib/audio/player";
 
     let config: Config = $state(ConfigDefault);
     let session: Session = $state(SessionDefault);
     let remainingTime: number = $state(0);
     let isRunning: boolean = $state(false);
-    let breakIntervals: number = $state(0);
+    let currentSession: number = $state(1);
 
     $effect(() => {
         const storedConfig = localStorage.getItem("config");
@@ -35,6 +36,7 @@
             const interval = setInterval(() => {
                 remainingTime -= 1000;
                 if (remainingTime <= 0) {
+                    PlayAlarm();
                     if (config.AutoResumeTimer) {
                         nextSession();
                     } else {
@@ -71,70 +73,65 @@
     const nextSession = function () {
         switch (session) {
             case "focus":
-                if (breakIntervals >= config.LongBreakInterval - 1) {
+                if (currentSession > config.LongBreakInterval - 1) {
                     session = "long_break";
                     remainingTime = config.LongBreakLen;
                 } else {
                     session = "short_break";
                     remainingTime = config.ShortBreakLen;
                 }
-                breakIntervals++;
                 break;
             case "short_break":
                 session = "focus";
                 remainingTime = config.FocusLen;
+                currentSession++;
                 break;
             case "long_break":
                 session = "focus";
                 remainingTime = config.FocusLen;
-                breakIntervals = 0;
+                currentSession = 1;
                 break;
         }
     };
 </script>
 
-<div
-    class={`main ${
-        session === "focus"
-            ? "bg-red-lighter"
-            : session === "short_break"
-              ? "bg-green-lighter"
-              : "bg-blue-lighter"
-    }`}
->
+<svelte:head>
+    {#if session === "focus"}
+        <title
+            >Focus - {Format.MsToMinutes(remainingTime)}:{Format.MsToSeconds(remainingTime)}</title
+        >
+        <link rel="icon" href="/favicon_focus.ico" />
+    {:else}
+        <title
+            >{session === "short_break" ? "Short Break" : "Long Break"} - {Format.MsToMinutes(
+                remainingTime,
+            )}:{Format.MsToSeconds(remainingTime)}</title
+        >
+        <link rel="icon" href="/favicon_break.ico" />
+    {/if}
+</svelte:head>
+
+<div class={`main ${session === "focus" ? "bg-red-lighter" : "bg-blue-lighter"}`}>
     <div class="wrap">
         <div
             class={`title ${
                 session === "focus"
-                    ? "color-red-dark bg-red-light border-red-dark"
-                    : session === "short_break"
-                      ? "color-green-dark bg-green-light border-green-dark"
-                      : "color-blue-dark bg-blue-light border-blue-dark"
+                    ? "color-red bg-red-lighter border-red"
+                    : "color-blue bg-blue-lighter border-blue"
             }`}
         >
             {#if session === "focus"}
                 <Brain />
-                <p>Focus</p>
+                <p>Focus {currentSession}/{config.LongBreakInterval}</p>
             {:else if session === "short_break"}
                 <Coffee />
-                <p>Short Break</p>
+                <p>Short Break {currentSession}/{config.LongBreakInterval}</p>
             {:else if session === "long_break"}
                 <Coffee />
-                <p>Long Break</p>
+                <p>Long Break {currentSession}/{config.LongBreakInterval}</p>
             {/if}
         </div>
-        <div class="subtitle">
-            <p>{breakIntervals}/{config.LongBreakInterval}</p>
-        </div>
-        <div
-            class={`timer ${
-                session === "focus"
-                    ? "color-red-dark"
-                    : session === "short_break"
-                      ? "color-green-dark"
-                      : "color-blue-dark"
-            }`}
-        >
+        <div class={`timer ${session === "focus" ? "color-red" : "color-blue"}`}>
             <span class={`minutes font-weight-${isRunning ? 400 : 300}`}
                 >{Format.MsToMinutes(remainingTime)}</span
             >
@@ -144,23 +141,23 @@
         </div>
         <div class="btns">
             <button
-                onclick={restartTimer}
+                onclick={() => {
+                    PlayClick();
+                    restartTimer();
+                }}
                 class={`${
                     session === "focus"
                         ? "bg-red-light color-red-dark"
-                        : session === "short_break"
-                          ? "bg-green-light color-green-dark"
-                          : "bg-blue-light color-blue-dark"
+                        : "bg-blue-light color-blue-dark"
                 }`}><RotateCcw /></button
             >
             <button
-                onclick={toggleTimer}
+                onclick={() => {
+                    PlayClick();
+                    toggleTimer();
+                }}
                 class={`${
-                    session === "focus"
-                        ? "bg-red color-red-lighter"
-                        : session === "short_break"
-                          ? "bg-green color-green-dark"
-                          : "bg-blue color-blue-lighter"
+                    session === "focus" ? "bg-red color-red-lighter" : "bg-blue color-blue-lighter"
                 }`}
             >
                 {#if isRunning}
@@ -170,13 +167,14 @@
                 {/if}
             </button>
             <button
-                onclick={nextSession}
+                onclick={() => {
+                    PlayClick();
+                    nextSession();
+                }}
                 class={`${
                     session === "focus"
                         ? "bg-red-light color-red-dark"
-                        : session === "short_break"
-                          ? "bg-green-light color-green-dark"
-                          : "bg-blue-light color-blue-dark"
+                        : "bg-blue-light color-blue-dark"
                 }`}><ArrowRight /></button
             >
         </div>
@@ -208,15 +206,6 @@
 
         p {
             margin-left: 0.3em;
-            font-size: 1.2em;
-            font-weight: 400;
-        }
-    }
-
-    .subtitle {
-        margin-top: 1.6em;
-
-        p {
             font-size: 1.2em;
             font-weight: 400;
         }
