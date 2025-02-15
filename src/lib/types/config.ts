@@ -4,6 +4,7 @@ export type Config = {
     LongBreakLen: number;
     LongBreakInterval: number;
     AutoResumeTimer: boolean;
+    SoundEnabled: boolean;
 };
 
 export const ConfigDefault = {
@@ -12,4 +13,5 @@ export const ConfigDefault = {
     LongBreakLen: 10 * 60 * 1000,
     LongBreakInterval: 4,
     AutoResumeTimer: true,
+    SoundEnabled: true,
 };
