@@ -100,14 +100,14 @@
         <title
             >Focus - {Format.MsToMinutes(remainingTime)}:{Format.MsToSeconds(remainingTime)}</title
         >
-        <link rel="icon" href="/favicon_focus.ico" />
+        <link rel="icon" href="/pomolite_focus.ico" />
     {:else}
         <title
             >{session === "short_break" ? "Short Break" : "Long Break"} - {Format.MsToMinutes(
                 remainingTime,
             )}:{Format.MsToSeconds(remainingTime)}</title
         >
-        <link rel="icon" href="/favicon_break.ico" />
+        <link rel="icon" href="/pomolite_break.ico" />
     {/if}
 </svelte:head>
 
